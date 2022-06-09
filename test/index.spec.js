@@ -474,13 +474,6 @@ describe('Library specs', function () {
         equal(result, EXPECTED_COLLECTION_WRAPPER)
       })
 
-      it('should return friendly error message when a response sample body has an error in JSON', async function () {
-        await rejects(postmanToOpenApi(COLLECTION_RESPONSES_JSON_ERROR, OUTPUT_PATH, {}), {
-          name: 'Error',
-          message: 'Error parsing response example "Create new User automatic id"'
-        })
-      })
-
       it('should not fail if response body is json but empty', async function () {
         const result = await postmanToOpenApi(COLLECTION_RESPONSES_EMPTY, OUTPUT_PATH, { pathDepth: 2 })
         equal(result, EXPECTED_EMPTY_RESPONSES)
