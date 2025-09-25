@@ -124,7 +124,7 @@ The third parameter used in the library method is an `options` object containing
 |------------------|------------------------------------------------------------------------------------|
 | [info](#info-object) | Basic API information |
 | [defaultTag](#defaulttag-string) | Values of the default tag object. |
-| [pathDepth](#pathdepth-number) | Number of subpaths that should be part of the operation path.  |
+| [pathDepth](#pathdepth-number) | Number of sub-paths that should be part of the operation path.  |
 | [auth](#auth-object) | Global authorization definition object. |
 | [servers](#servers-array) | Server list for the OpenApi specs. |
 | [externalDocs](#externaldocs-object) | Info about the API external documentation. |
@@ -132,6 +132,8 @@ The third parameter used in the library method is an `options` object containing
 | [responseHeaders](#responseheaders-boolean) | Indicate if should parse the response headers from the collection examples. |
 | [replaceVars](#replacevars-boolean) | Boolean value to indicate if postman variables should be replaced.|
 | [additionalVars](#additionalvars-object) |  Object to provide additional values for variables replacement.|
+| [outputFormat](#outputformat-string) | Indicate the format of the output document. |
+| [operationId](#operationid-string) | Indicate how to provide the value for `operationId` field. |
 
 ### info (Object)
 
@@ -143,8 +145,8 @@ The basic information of the API is obtained from Postman collection as describe
 | `version`        | String. The version of the OpenAPI document. |
 | `description`    | String. A short description of the API.                                            |
 | `termsOfService` | String. A URL to the Terms of Service for the API. MUST be in the format of a URL. |
-| `contact`        | Object. The contact information for the exposed API. See details in [License and Contact configuration](#license-and-contact-configuration) section.                             |
-| `license`        | Object. The license information for the exposed API.See details in [License and Contact configuration](#license-and-contact-configuration) section. |
+| `contact`        | Object. The contact information for the exposed API. See details in [Pass data as postman collection variables](#pass-data-as-postman-collection-variables) section.                             |
+| `license`        | Object. The license information for the exposed API.See details in [Pass data as postman collection variables](#pass-data-as-postman-collection-variables) section. |
 | `xLogo` | Object. Contain the info for the `x-logo` extension defined by [redoc](https://github.com/Redocly/redoc/blob/master/docs/redoc-vendor-extensions.md#x-logo) |
 
 Basically this are the required and relevant parameters defined in OpenAPI spec [info object](http://spec.openapis.org/oas/v3.0.3.html#info-object), an example of the option will be:
@@ -252,7 +254,7 @@ The info about the API external documentation, as described in OpenAPI spec [Ext
 }
 ```
 
-This info can be provided as collection variables in the same way as described in section [License and Contact configuration](#license-and-contact-configuration), you can setup the variables `externalDocs.url` and `externalDocs.description` for provide the information.
+This info can be provided as collection variables in the same way as described in section [Pass data as postman collection variables](#pass-data-as-postman-collection-variables), you can setup the variables `externalDocs.url` and `externalDocs.description` for provide the information.
 
 ### folders (Object)
 
@@ -310,9 +312,6 @@ Avoid concatenation
 }
 ```
 
-</div></div>
-<div class="tilted-section"><div markdown="1">
-
 ### responseHeaders (Boolean)
 
 This flag indicates if the headers that are saved as part of the postman collection examples (see feature [Responses parsed from Postman collection examples](#responses-parsed-from-postman-collection-examples)) should be used in the OpenApi specification. This headers normally contain lot of unused headers but are automatically saved by postman when create an example, a better approach is to define response headers in a common way.
@@ -346,11 +345,47 @@ This parameter is a json Object that contain as key the variable name and as val
 
 Take into account that variable values provided in the `additionalVars` Object supersede those defined at Postman collection level.
 
+### outputFormat (string)
+
+Indicates the resulting format of the OpenAPI document between `json` and `yaml`, the resulting file will be write using this format and also the result value fo the method `postmanToOpenApi(...)` will use this format.
+
+Default value is `yaml`, if you use a unknown value `yaml` will be used.
+
+### disabledParams (object)
+
+By default all parameters in the postman collection that has the field `"disabled": true` are ignored and not included in the resulting OpenAPI doc, you can customize this behavior with this options
+
+| Param            | Description                                                                        |
+|------------------|------------------------------------------------------------------------------------|
+| `includeQuery`   | Boolean. Indicates if the "query" parameters disabled should be included into the OpenAPI spec. |
+| `includeHeader`  | Boolean. Indicates if the "header" parameters disabled should be included into the OpenAPI spec. |
+
+Please have a look to the [Parameters parsing](#parameters-parsing) section about duplicated parameters names in Headers and Query, this will apply also to the disabled parameters when using this feature.
+
+### operationId (string)
+
+In OpenAPI the [operationId](https://swagger.io/specification/#operation-object) is a unique id that is used mainly for Tools and libraries to uniquely identify an operation, with this option you can indicate the strategy to provide this value for each request operation, the possible values are:
+
+| Option            | Description                                                                        |
+|------------------|------------------------------------------------------------------------------------|
+| `off`   | Default. No `operationId` will be added. |
+| `auto`  | The field `name` of the request will transformed as [Camel case](https://es.wikipedia.org/wiki/Camel_ca) and used as `operationId`. |
+| `brackets` | Will look for a name between brackets in the fields `name` of the request and use this as `operationId`. |
+
+As an example of option `auto` if you have in a postman collection a request with name `Create new User` the resulting operation id will be `createNewUser`.
+
+To use option `brackets` you should add the desired operation id between brackets in the name of the request, so for example if you use as request name `Create new User [newUser]`, the text `newUser` will be used as operation id, the library automatically will remove the literal `[newUser]` from the name and will no appear in the `summary` field in the OpenAPI yaml.
+
+> **Note about duplications:** As described in OpenAPI about the operationId, "The id MUST be unique among all operations described in the API." but the library does not ensure the uniqueness, so before do the conversion check that you are using unique operations ids for each request in your collection.
+
+</div></div>
+<div class="tilted-section"><div markdown="1">
+
 # Features
 
 ## Basic conversion
 
-This library support the transformation from Postman collection to all the basic HTTP method as GET, POST, PUT... parse the body request of type "raw" (`Json` and `Text`), "form-data" (see ["form-data" body](#form-data-body) section for more info about this mode) and "x-www-form-urlencoded" formats. [Query parameters](#parameters-parsing) are also supported.
+This library support the transformation from Postman collection to all the basic HTTP method as GET, POST, PUT... parse the body request of type "raw" (`Json` and `Text`, please see [Postman raw body](#postman-raw-body)), "form-data" (see ["form-data" body](#form-data-body) section for more info about this mode) and "x-www-form-urlencoded" formats. [Query parameters](#parameters-parsing) are also supported.
 
 Have a look to the [PostmantoOpenAPI collection](https://github.com/joolfe/postman-to-openapi/blob/master/test/resources/input/v21/PostmantoOpenAPI.json) file for an example of how to use this feature.
 
@@ -360,9 +395,9 @@ For fill the OpenAPI [info object](http://spec.openapis.org/oas/v3.0.3.html#info
 
 Postman don't have any field at collection level that feat with OpenAPI "version" field (is a required field in OpenAPI specification), so this library look for a variable with name `version` in Postman [collection variables](https://learning.postman.com/docs/sending-requests/variables/#defining-collection-variables) or if variable is not defined then will use the default value `1.0.0`.
 
-You can customize all this information with the [Info option](#info-(object)).
+You can customize all this information with the [Info option](#info-object).
 
-For info about how to setup the `contact` and `license` properties have a look to section [License and Contact configuration](#license-and-contact-configuration).
+For info about how to setup the `contact` and `license` properties have a look to section [Pass data as postman collection variables](#pass-data-as-postman-collection-variables).
 
 Have a look to the [SimplePost collection](https://github.com/joolfe/postman-to-openapi/blob/master/test/v21/SimplePost.json) file for an example of how to use this feature.
 
@@ -388,13 +423,15 @@ For headers and query fields you can indicate that this parameter is mandatory/r
 
 Have a look to the [GetMethods collection](https://github.com/joolfe/postman-to-openapi/blob/master/test/resources/input/v21/GetMethods.json), [Headers collection](https://github.com/joolfe/postman-to-openapi/blob/master/test/resources/input/v21/Headers.json) and [PathParams collection](https://github.com/joolfe/postman-to-openapi/blob/master/test/resources/input/v21/PathParams.json) files for examples of how to use this features.
 
+> **Note about duplications:** In Postman is possible to define multiples parameters with the same name/key in Query and Headers sections but in OpenAPI spec the combination of "name" and location (expressed by field "in") in parameters should be unique, to avoid generate invalid OpenAPI spec files the library will only use the first apparition of the parameters and discard the repeated ones, so take into consideration when you define your postman collection.
+
 ## Postman authorization
 
 The OpenAPI root [security](http://spec.openapis.org/oas/v3.0.3.html#openapi-object) definition is filled using the authorization method defined at Postman Collection [authorization config](https://learning.postman.com/docs/sending-requests/authorization/#inheriting-auth).
 
 Only types 'Basic Auth' and 'Bearer Token' are supported by now. If you define an authorization at postman request level this will overwrite the global defined for this OpenAPI operation.
 
-You can customize the global authorization definition using the [Auth option](#auth-(object)).
+You can customize the global authorization definition using the [Auth option](#auth-object).
 
 Have a look to the collections [AuthBasic](https://github.com/joolfe/postman-to-openapi/blob/master/test/resources/input/v21/AuthBasic.json), [AuthBearer](https://github.com/joolfe/postman-to-openapi/blob/master/test/resources/input/v21/AuthBearer.json) and [AuthMultiple](https://github.com/joolfe/postman-to-openapi/blob/master/test/resources/input/v21/AuthMultiple.json) for examples of how to use this feature.
 
@@ -420,7 +457,7 @@ Is as easy as define the values in the "Edit Collection" form page inside the ta
 
 The variables names will be in dot notation, for example for `contact` fields will be as `contact.name`, `contact.url`... Take into account that fields that are required by OpenAPI specs, as `contact.name`, if not provided then all the section will be ignored.
 
-You can also customize this information using the [Info option](#info-(object)), note that info provided by options will overwrite the variables inside the Postman collection (has more priority) but values will be merged from both sources (postman variables and options).
+You can also customize this information using the [Info option](#info-object), note that info provided by options will overwrite the variables inside the Postman collection (has more priority) but values will be merged from both sources (postman variables and options).
 
 ## Pass Meta-information as markdown
 
@@ -478,6 +515,12 @@ Library `postman-to-openapi` is able to parse the Postman collection body reques
 ![form-data options](assets/img/formDataOptions.png)
 
 A "form-data" request body will be describe as a `multipart/form-data` content with schema of type `object`. For `Text` parameter `postman-to-openapi` will parse just as a `type: string` parameter and for type `File` following  OpenAPI specs is parsed as `type: string, format: binary`
+
+## Postman raw body
+
+When using the `raw` mode in Postman a select box appear to choose the language, please ensure that you select a language manually, even if you see that select box have "Text" as default in some version of postman if you choose one manually this will be saved as empty.
+
+The default behavior of the library when no language is selected in the `raw` body type is to use the content type `*/*` with schema type `string`.
 
 </div></div>
 <div class="tilted-section"><div markdown="1">

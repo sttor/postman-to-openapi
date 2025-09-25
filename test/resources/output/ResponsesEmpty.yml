@@ -68,7 +68,7 @@ paths:
                 example: Sat, 05 Jun 2021 08:42:32 GMT
             Via:
               schema:
-                type: number
+                type: string
                 example: 1.1 vegur
           content:
             application/json:
@@ -84,6 +84,12 @@ paths:
                     avatar: https://cdn.fakercloud.com/avatars/nelsonjoyce_128.jpg
                 example-1:
                   summary: Create new User automatic id
+                  value: {}
+                example-2:
+                  summary: Create new User automatic id (null)
+                  value: {}
+                example-3:
+                  summary: Create new User automatic id (undefined)
                   value: {}
   /users/{user_id}:
     get:
@@ -149,7 +155,7 @@ paths:
                 example: Sat, 05 Jun 2021 08:48:00 GMT
             Via:
               schema:
-                type: number
+                type: string
                 example: 1.1 vegur
           content:
             application/json:
@@ -209,7 +215,7 @@ paths:
                 example: Sat, 05 Jun 2021 08:48:30 GMT
             Via:
               schema:
-                type: number
+                type: string
                 example: 1.1 vegur
           content:
             text/plain:

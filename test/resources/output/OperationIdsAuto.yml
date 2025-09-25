@@ -1,10 +1,8 @@
 openapi: 3.0.0
 info:
-  title: Postman to OpenAPI
+  title: OperationIds
   description: Mi super test collection from postman
   version: 1.1.0
-externalDocs:
-  url: https://docs2.example.com
 servers:
   - url: https://api.io
 paths:
@@ -13,6 +11,7 @@ paths:
       tags:
         - default
       summary: Create new User
+      operationId: createNewUser
       description: Create a new user into your amazing API
       requestBody:
         content:
@@ -34,6 +33,7 @@ paths:
       tags:
         - default
       summary: Create a post
+      operationId: createAPost
       requestBody:
         content:
           text/plain: {}
@@ -47,6 +47,7 @@ paths:
       tags:
         - default
       summary: Create a note
+      operationId: createANote
       description: Just an example of text raw body
       requestBody:
         content:

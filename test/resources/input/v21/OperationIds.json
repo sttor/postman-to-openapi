@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "2a45baa5-352f-4831-8483-1a0fcbc7da37",
-		"name": "Postman to OpenAPI",
+		"_postman_id": "030b673d-ddb2-4217-914c-46890cf112cc",
+		"name": "OperationIds",
 		"description": "Mi super test collection from postman",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "64956"
 	},
 	"item": [
 		{
@@ -36,18 +37,13 @@
 			"response": []
 		},
 		{
-			"name": "Create a post",
+			"name": "Create a post [createPost]",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "file",
-					"file": {},
-					"options": {
-						"raw": {
-							"language": "text"
-						}
-					}
+					"file": {}
 				},
 				"url": {
 					"raw": "https://api.io/posts",
@@ -64,7 +60,7 @@
 			"response": []
 		},
 		{
-			"name": "Create a note",
+			"name": "Create a note [createNote]",
 			"request": {
 				"method": "POST",
 				"header": [],
@@ -91,21 +87,12 @@
 				"description": "Just an example of text raw body"
 			},
 			"response": []
-		},
-		{
-			"name": "No url request",
-			"request": {
-				"method": "GET",
-				"header": []
-			},
-			"response": []
 		}
 	],
 	"event": [
 		{
 			"listen": "prerequest",
 			"script": {
-				"id": "ef248fcc-2944-4cba-837f-680b10a45b30",
 				"type": "text/javascript",
 				"exec": [
 					""
@@ -115,7 +102,6 @@
 		{
 			"listen": "test",
 			"script": {
-				"id": "8e7453aa-5712-4a90-bc32-965c7d47906a",
 				"type": "text/javascript",
 				"exec": [
 					""
@@ -125,10 +111,8 @@
 	],
 	"variable": [
 		{
-			"id": "d04439bd-c604-4758-bde2-3c873140f38c",
 			"key": "version",
 			"value": "1.1.0"
 		}
-	],
-	"protocolProfileBehavior": {}
+	]
 }

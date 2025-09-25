@@ -1,10 +1,8 @@
 openapi: 3.0.0
 info:
-  title: Postman to OpenAPI
+  title: OperationIds
   description: Mi super test collection from postman
   version: 1.1.0
-externalDocs:
-  url: https://docs2.example.com
 servers:
   - url: https://api.io
 paths:

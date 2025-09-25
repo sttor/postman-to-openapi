@@ -14,6 +14,8 @@ const COLLECTION_NO_OPTIONS = './test/resources/input/NoOptionsInBody.json'
 const COLLECTION_NULL_HEADERS = './test/resources/input/NullHeaders.json'
 
 const EXPECTED_BASIC = readFileSync('./test/resources/output/Basic.yml', 'utf8')
+const EXPECTED_BASIC_JSON = readFileSync('./test/resources/output/Basic.json', 'utf8')
+const EXPECTED_BASIC_NO_OPTS = readFileSync('./test/resources/output/BasicNoOptions.yml', 'utf8')
 const EXPECTED_INFO_OPTS = readFileSync('./test/resources/output/InfoOpts.yml', 'utf8')
 const EXPECTED_NO_VERSION = readFileSync('./test/resources/output/NoVersion.yml', 'utf8')
 const EXPECTED_CUSTOM_TAG = readFileSync('./test/resources/output/CustomTag.yml', 'utf8')
@@ -60,6 +62,13 @@ const EXPECTED_RAW_BODY = readFileSync('./test/resources/output/RawBody.yml', 'u
 const EXPECTED_NULL_HEADER = readFileSync('./test/resources/output/NullHeader.yml', 'utf8')
 const EXPECTED_COLLECTION_WRAPPER = readFileSync('./test/resources/output/CollectionWrapper.yml', 'utf8')
 const EXPECTED_COLLECTION_JSON_COMMENTS = readFileSync('./test/resources/output/JsonComments.yml', 'utf8')
+const EXPECTED_DISABLED_PARAMS_DEFAULT = readFileSync('./test/resources/output/DisabledParamsDefault.yml', 'utf8')
+const EXPECTED_DISABLED_PARAMS_ALL = readFileSync('./test/resources/output/DisabledParamsAll.yml', 'utf8')
+const EXPECTED_DISABLED_PARAMS_QUERY = readFileSync('./test/resources/output/DisabledParamsQuery.yml', 'utf8')
+const EXPECTED_DISABLED_PARAMS_HEADER = readFileSync('./test/resources/output/DisabledParamsHeader.yml', 'utf8')
+const EXPECTED_OPERATIONS_IDS = readFileSync('./test/resources/output/OperationIds.yml', 'utf8')
+const EXPECTED_OPERATIONS_IDS_AUTO = readFileSync('./test/resources/output/OperationIdsAuto.yml', 'utf8')
+const EXPECTED_OPERATIONS_IDS_BRACKETS = readFileSync('./test/resources/output/OperationIdsBrackets.yml', 'utf8')
 
 const AUTH_DEFINITIONS = {
   myCustomAuth: {
@@ -123,6 +132,8 @@ describe('Library specs', function () {
       const COLLECTION_RESPONSES_JSON_ERROR = `./test/resources/input/${version}/ResponsesJsonError.json`
       const COLLECTION_RESPONSES_EMPTY = `./test/resources/input/${version}/ResponsesEmpty.json`
       const COLLECTION_JSON_COMMENTS = `./test/resources/input/${version}/JsonComments.json`
+      const COLLECTION_DISABLED = `./test/resources/input/${version}/DisabledParams.json`
+      const COLLECTION_OPERATION_IDS = `./test/resources/input/${version}/OperationIds.json`
 
       it('should work with a basic transform', async function () {
         const result = await postmanToOpenApi(COLLECTION_BASIC, OUTPUT_PATH, {})
@@ -483,12 +494,70 @@ describe('Library specs', function () {
         const result = await postmanToOpenApi(COLLECTION_JSON_COMMENTS, OUTPUT_PATH, { pathDepth: 2 })
         equal(result, EXPECTED_COLLECTION_JSON_COMMENTS)
       })
+
+      it('should return "json" format is requested', async function () {
+        const result = await postmanToOpenApi(COLLECTION_BASIC, OUTPUT_PATH, { outputFormat: 'json' })
+        equal(result, EXPECTED_BASIC_JSON)
+      })
+
+      it('should not parse `disabled` parameters', async function () {
+        const result = await postmanToOpenApi(COLLECTION_DISABLED, OUTPUT_PATH)
+        equal(result, EXPECTED_DISABLED_PARAMS_DEFAULT)
+      })
+
+      it('should parse `disabled` parameters if option is used', async function () {
+        const result = await postmanToOpenApi(COLLECTION_DISABLED, OUTPUT_PATH, {
+          disabledParams: {
+            includeQuery: true,
+            includeHeader: true
+          }
+        })
+        equal(result, EXPECTED_DISABLED_PARAMS_ALL)
+      })
+
+      it('should include `disable` query but not header', async function () {
+        const result = await postmanToOpenApi(COLLECTION_DISABLED, OUTPUT_PATH, {
+          disabledParams: {
+            includeQuery: true
+          }
+        })
+        equal(result, EXPECTED_DISABLED_PARAMS_QUERY)
+      })
+
+      it('should include `disable` headers but not query', async function () {
+        const result = await postmanToOpenApi(COLLECTION_DISABLED, OUTPUT_PATH, {
+          disabledParams: {
+            includeHeader: true
+          }
+        })
+        equal(result, EXPECTED_DISABLED_PARAMS_HEADER)
+      })
+
+      it('should not add `operationId` by default', async function () {
+        const result = await postmanToOpenApi(COLLECTION_OPERATION_IDS, OUTPUT_PATH)
+        equal(result, EXPECTED_OPERATIONS_IDS)
+      })
+
+      it('should include `operationId` when `auto` is selected', async function () {
+        const result = await postmanToOpenApi(COLLECTION_OPERATION_IDS, OUTPUT_PATH, { operationId: 'auto' })
+        equal(result, EXPECTED_OPERATIONS_IDS_AUTO)
+      })
+
+      it('should include `operationId` when `brackets` is selected', async function () {
+        const result = await postmanToOpenApi(COLLECTION_OPERATION_IDS, OUTPUT_PATH, { operationId: 'brackets' })
+        equal(result, EXPECTED_OPERATIONS_IDS_BRACKETS)
+      })
+
+      it('should not add `operationId` if option is unknown', async function () {
+        const result = await postmanToOpenApi(COLLECTION_OPERATION_IDS, OUTPUT_PATH, { operationId: 'banana' })
+        equal(result, EXPECTED_OPERATIONS_IDS)
+      })
     })
   })
 
   it('should work if no options in request body', async function () {
     const result = await postmanToOpenApi(COLLECTION_NO_OPTIONS, OUTPUT_PATH, {})
-    equal(result, EXPECTED_BASIC)
+    equal(result, EXPECTED_BASIC_NO_OPTS)
   })
 
   it('should expose the version of the library', async function () {
@@ -503,6 +572,15 @@ describe('Library specs', function () {
   it('should work with string as input (instead of a file path)', async function () {
     const collectionString = await readFile(COLLECTION_NO_OPTIONS, 'utf8')
     const result = await postmanToOpenApi(collectionString, OUTPUT_PATH, {})
-    equal(result, EXPECTED_BASIC)
+    equal(result, EXPECTED_BASIC_NO_OPTS)
   })
+
+  /* we keep this because im using all the time to resolve issues
+  it('issue233', async function () {
+    const collectionString = await readFile('./test/resources/input/issue233.json', 'utf8')
+    const result = await postmanToOpenApi(collectionString, OUTPUT_PATH, {})
+    console.log(result)
+    // equal(result, EXPECTED_BASIC_NO_OPTS)
+  })
+  */
 })
